@@ -5,9 +5,6 @@ from keyboard import reply_bttns, weeks_kb
 import datetime
 import asyncio
 
-# TODO: Добавить смайлики или эмоджи
-# TODO: Разукрасить текст сообщений или изменить шрифты и т.п.
-
 # Загрузка расписания
 with open("shedule_1.json", encoding='utf-8') as file:
     WEEK1_SHEDULE = json.load(file)
@@ -19,14 +16,16 @@ with open("shedule_2.json", encoding='utf-8') as file:
 logging.basicConfig(level=logging.INFO)
 
 
-async def send_sheduled_mess(text, time):  # time format = '07:35:02'
+async def send_sheduled_mess(time):  # time format = '07:35:02'
     """Отправляет расписание на текущий день user_id, если наступил time"""
+
     while True:
         ids = get_ids('id.txt')
         curr_day, curr_time = get_current_datetime()
         for id in ids:
             if curr_time == time:
-                await bot.send_message(id, create_send_mess(curr_day))
+                logging.info("Высылаю расписание на установленное время!")
+                await bot.send_message(id, create_send_mess(curr_day), parse_mode='HTML')
         await asyncio.sleep(1)
 
 
@@ -65,28 +64,33 @@ async def greeting_message(message: types.Message):
 @dp.message_handler(commands=['help'])
 async def help_message(message: types.Message):
     await bot.send_message(message.from_id,
-                           'Выбери соответствующий твоим запросам пункт :eyes:.')
+                           'Выбери соответствующий твоим запросам пункт.')
 
 
+@dp.message_handler(commands=['today'])
 @dp.message_handler(text='Сегодня')
 async def today(message: types.Message):
     """Отправляет пользователю расписание на текущий день."""
     day_of_week = datetime.date.today().ctime()[:3]
     sending_message = create_send_mess(day_of_week, day='Сегодня')
-    await bot.send_message(message.from_id, sending_message)
+    await bot.send_message(message.from_id, sending_message, parse_mode='HTML')
 
 
+@dp.message_handler(commands=['tomorrow'])
 @dp.message_handler(text='Завтра')
 async def tomorrow(message: types.Message):
     """Send the shedule of the next day."""
+    logging.info('Отправляю расписание')
     tomorrow_en = next_day(datetime.date.today().ctime()[:3])
     tomorrow_rus = TRANSLATOR[tomorrow_en]
     sending_message = create_send_mess(tomorrow_en, day='Завтра')
-    await bot.send_message(message.from_id, sending_message)
+    await bot.send_message(message.from_id, sending_message, parse_mode='HTML')
 
 
+@dp.message_handler(commands=['week'])
 @dp.message_handler(text='Неделя')
 async def week(message: types.Message):
+    logging.info('Отправляю расписание')
     await message.answer('Выбери неделю:', reply_markup=weeks_kb)
 
 
@@ -98,7 +102,7 @@ async def callback_reg1(callback: types.CallbackQuery):
         sending_message += TRANSLATOR[i] + '\n'
         sending_message += read_by_key(opened_json, i)
         sending_message += '======\n'
-    await callback.message.answer(text=sending_message)
+    await callback.message.answer(text=sending_message, parse_mode='HTML')
 
 
 @dp.callback_query_handler(text='Неделя 2')
@@ -109,12 +113,34 @@ async def callback_reg2(callback: types.CallbackQuery):
         sending_message += TRANSLATOR[i] + '\n'
         sending_message += read_by_key(opened_json, i)
         sending_message += '======\n'
-    await callback.message.answer(text=sending_message)
+    await callback.message.answer(text=sending_message, parse_mode='HTML')
+
+
+@dp.message_handler(commands=['week_1', 'week_2'])
+async def show_week_shedule(message: types.Message):
+    logging.info('Отправляю расписание')
+    sending_message = ''
+    if message.text == '/week_1':
+        opened_json = open_json('shedule_1.json')
+    else:
+        opened_json = open_json('shedule_2.json')
+    for i in opened_json:
+        sending_message += TRANSLATOR[i] + '\n'
+        sending_message += read_by_key(opened_json, i)
+        sending_message += '======\n'
+    await message.answer(text=sending_message, parse_mode='HTML')
+
+
+@dp.message_handler()
+async def answer(message: types.Message):
+    logging.info(f'Непонятный запрос: message - {message.text}: id - {message.from_id}')
+    await message.answer('<b>Непонятный запрос</b>', parse_mode='HTML')
 
 
 def main():
+    logging.info('Запускаю бота!')
     loop = asyncio.get_event_loop()
-    loop.create_task((send_sheduled_mess('Привет', time='08:00:00')))
+    loop.create_task((send_sheduled_mess(time='18:23:30')))
     executor.start_polling(dp, loop=loop)
 
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 from aiogram import Bot, Dispatcher
 import json
+import os
 
 
 def next_day(today: str) -> str:
@@ -30,7 +31,10 @@ def read_by_key(obj, *keys: str) -> str:
         day_shedule = obj[key]
         # referring to shedule order
         for i in day_shedule:
+            subject = day_shedule[i]
+            # subject = subject[:10] + f'<b>{subject[10:15]}</b>' + subject[15:]
             result += day_shedule[i]
+            # result = subject
 
     return result
 
@@ -76,8 +80,7 @@ def write_id(obj: str, id: str):
         return 'Id не записан. Ошибка:', ex
 
 
-API_TOKEN = '5658242451:AAH3b_AemmIHMFl70ZepptXNu_KqqCDoFiM'
-
+API_TOKEN = os.getenv('shedule')
 DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 DAYS_RUS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 TRANSLATOR = dict(zip(DAYS_EN, DAYS_RUS))
@@ -85,4 +88,3 @@ TRANSLATOR = dict(zip(DAYS_EN, DAYS_RUS))
 # initialize bot
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
-print(get_current_datetime())
