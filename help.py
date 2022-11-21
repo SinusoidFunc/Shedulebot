@@ -80,7 +80,7 @@ def write_id(obj: str, id: str):
         return 'Id не записан. Ошибка:', ex
 
 
-API_TOKEN = os.getenv('shedule')
+API_TOKEN = "5658242451:AAFsjXeahGS5ianfL7SINvbOER-KJB2faR0"
 DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 DAYS_RUS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 TRANSLATOR = dict(zip(DAYS_EN, DAYS_RUS))
